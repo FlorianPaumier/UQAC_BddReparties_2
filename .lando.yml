@@ -1,0 +1,35 @@
+name: pathfinder
+recipe: symfony
+config:
+  php: '8.0'
+  webroot: public
+  xdebug: true
+  via: 'nginx:1.18'
+  database: 'postgres:12'
+  cache: 'redis:5'
+services:
+  appserver_nginx:
+    scanner: false
+  mailhog:
+    type: 'mailhog:v1.0.0'
+    portforward: true
+    hogfrom:
+      - appserver
+  node:
+    type: 'node:14'
+  chromedriver:
+    type: compose
+    app_mount: false
+    services:
+      image: 'selenium/standalone-chrome:85.0'
+      command: /opt/bin/entry_point.sh
+      expose:
+        - '4444'
+tooling:
+  redis-cli:
+    service: cache
+  yarn:
+    service: node
+proxy:
+  mailhog:
+    - mailhog-pa.lndo.site

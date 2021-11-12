@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Beast{% endblock %}
+
+{% block body %}
+    <h1>Edit Beast</h1>
+
+    {{ include('beast/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('beast_index') }}">back to list</a>
+
+    {{ include('beast/_delete_form.html.twig') }}
+{% endblock %}

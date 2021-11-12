@@ -1,0 +1,132 @@
+{# Page quantity to show around current page is 2 or a calculated minimum value #}
+{% set defaultPageQuantityAround = 3 %}
+{# Mininum value #}
+{% set minimumPageQuantityAround = min(pagination.currentPageNumber - 1, pagination.totalPages - pagination.currentPageNumber) %}
+{# Condition to show the right page numbers before current page: default or minimum value #}
+{% set conditionBefore = pagination.currentPageNumber != 1 and minimumPageQuantityAround <= pagination.currentPageNumber - 1 %}
+{# Condition to show the right page numbers after current page: default or minimum value #}
+{% set conditionAfter = pagination.currentPageNumber != pagination.totalPages and minimumPageQuantityAround <= pagination.totalPages - pagination.currentPageNumber %}
+{# Define page numbers before, other pages will be replaced by "..." #}
+{% set PageQuantityAroundBefore = conditionBefore ? defaultPageQuantityAround : minimumPageQuantityAround %}
+{# Define page numbers after, other pages will be replaced by "..." #}
+{% set PageQuantityAroundAfter = conditionAfter ? defaultPageQuantityAround : minimumPageQuantityAround %}
+{% set querySeparator = "?" %}
+{% set currentPage = pagination.currentPageNumber %}
+{% set hideBefore = false %}
+{% set hideAfter = false %}
+
+{% for key,query in app.request.query %}
+	{% if key != "page" %}
+		{% set querySeparator = querySeparator ~ key ~ "=" ~ query  %}
+		{% if not loop.last %}
+			{% set querySeparator = querySeparator ~ "&" %}
+		{% endif %}
+	{% endif %}
+
+{% endfor %}
+
+{% if pagination.totalCount > 0 %}
+	<section class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+		<div>
+			<p class="text-sm text-gray-700">
+				de
+				<span class="font-medium">{{ pagination.currentPageNumber * pagination.numItemsPerPage - (pagination.numItemsPerPage - 1) }}</span>
+				à
+				{% if pagination.currentPageNumber == pagination.totalPages %}
+					<span class="font-medium">{{ pagination.totalCount }}</span>
+				{% else %}
+					<span class="font-medium">{{ pagination.currentPageNumber * pagination.numItemsPerPage }}</span>
+				{% endif %}
+				sur
+				<span class="font-medium">{{ pagination.totalCount }}</span>
+				résultats
+			</p>
+		</div>
+		<div>
+			<nav class="pagination flex" aria-label="Pagination">
+				<a href="{{ querySeparator }}&page=1"
+				   class="{% if pagination.currentPageNumber == 1 or pagination.currentPageNumber  - 1 == 1 %}pointer-events-none{% endif %}
+				   flex items-center px-4 py-2  text-gray-700 transition-colors duration-200
+				   transform bg-white rounded-l-md dark:bg-gray-800 dark:text-gray-200 hover:bg-indigo-600
+				   dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200 border border-r-0">
+					<span class="sr-only">Précédant</span>
+					<!-- Heroicon name: solid/chevron-left -->
+					<i class="fas fa-angle-double-left"></i>
+				</a>
+				<a href="{{ querySeparator }}&page={{ pagination.currentPageNumber - 1 }}"
+				   class="{% if pagination.currentPageNumber == 1 %}pointer-events-none{% endif %}
+				   flex items-center px-4 py-2 text-gray-700 transition-colors duration-200 transform
+				   bg-white  dark:bg-gray-800 dark:text-gray-200 hover:bg-indigo-600
+				   dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200 border">
+					<span class="sr-only">Précédant</span>
+					<!-- Heroicon name: solid/chevron-left -->
+					<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+					     fill="currentColor"
+					     aria-hidden="true">
+						<path fill-rule="evenodd"
+						      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+						      clip-rule="evenodd"/>
+					</svg>
+				</a>
+				{% for i in 1..pagination.totalPages %}
+					{% if 0 < (currentPage - PageQuantityAroundBefore) - loop.index and hideBefore == false %} {# hide all before #}
+						<a class="flex items-center px-4 py-2  text-gray-700 transition-colors border-t border-b
+						 duration-200 transform bg-white  dark:bg-gray-800 dark:text-gray-200
+						  hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200">...</a>
+						{% set hideBefore = true %}
+					{% elseif 0 > (currentPage + PageQuantityAroundAfter) - loop.index and hideAfter == false %}
+						<a class="flex items-center px-4 py-2  text-gray-700 transition-colors border-t border-b
+						duration-200 transform bg-white  dark:bg-gray-800 dark:text-gray-200
+						 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200">...</a>
+						{% set hideAfter = true %}
+					{% elseif 0 > (currentPage + PageQuantityAroundAfter) - loop.index %}
+					{% elseif 0 < (currentPage - PageQuantityAroundBefore) - loop.index %}
+					{% else %}
+						<a href="{{ querySeparator }}&page={{ i }}"
+						   class="{% if pagination.currentPageNumber == i %}
+						   dark:bg-gray-800 bg-blue-600 text-white
+							{% else %}
+								dark:text-gray-200
+								text-gray-700
+							{% endif %}
+							{% if loop.index0 % 2 %}
+								border-l border-r
+							{% endif %}
+							flex items-center px-4 py-2  border-t border-b
+							transition-colors duration-200 transform bg-white  dark:bg-gray-800
+							 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200">
+							{{ i }}
+						</a>
+					{% endif %}
+				{% endfor %}
+				<a href="{{ querySeparator }}&page={{ pagination.currentPageNumber + 1 }}"
+				   class="{% if pagination.currentPageNumber == pagination.totalPages or pagination.totalCount == 0 %}pointer-events-none {% endif %}
+				    flex items-center px-4 py-2  text-gray-700 transition-colors border-t border-b
+				     duration-200 transform bg-white border dark:bg-gray-800 dark:text-gray-200
+				     hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200">
+					<span class="sr-only">Suivant</span>
+					<!-- Heroicon name: solid/chevron-right -->
+					<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+					     fill="currentColor"
+					     aria-hidden="true">
+						<path fill-rule="evenodd"
+						      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+						      clip-rule="evenodd"/>
+					</svg>
+				</a>
+				<a href="{{ querySeparator }}&page={{ pagination.totalPages }}"
+				   class="{% if
+					   pagination.currentPageNumber == pagination.totalPages
+					   or pagination.currentPageNumber + 1 == pagination.totalPages
+					   or pagination.totalCount == 0 %}pointer-events-none {% endif %}
+					   flex items-center px-4 py-2  text-gray-700 transition-colors duration-200
+					   transform bg-white rounded-r-md dark:bg-gray-800 dark:text-gray-200  border border-l-0
+					    hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-gray-200">
+					<span class="sr-only">Suivant</span>
+					<!-- Heroicon name: solid/chevron-right -->
+					<i class="fas fa-angle-double-right"></i>
+				</a>
+			</nav>
+		</div>
+	</section>
+{% endif %}

@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ClassType index{% endblock %}
+
+{% block body %}
+    {% include 'components/pageHeader.html.twig' with {title: "Classes Index", countProduct: 0, currentPath: "Home > Classes"} %}
+    
+    
+    <div class="mx-auto container py-6 px-4">
+{#        <ul class="md:flex-row md:flex hidden w-100 justify-between mx-8 text-center">#}
+{#            {% for i in range('A','Z') %}#}
+{#                <li class="{% if loop.index0 != 0 %}border-l-4 border-black{% endif%} text-center px-4"><a href="{{ path('spell_index', {"filter_alpha" : i}) }}">{{ i }}</a></li>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+        <select name="" class="md:hidden"
+                id=""></select>
+        <div class="flex flex-col w-full xl:flex-row justify-center">
+            <!-- Cards Start -->
+            <div class="flex flex-col justify-start">
+                <div class="container mx-auto px-6 py-10">
+                    <div class="xl:flex lg:flex md:flex xl:w-full md:justify-center w-11/12 mx-auto lg:justify-center xl:justify-between flex-wrap justify-between lg:items-center xl:flex-row xl:justify-between">
+                        {% for class_type in class_types.items %}
+                            <div class="xl:w-3/12 lg:w-4/12 md:w-6/12 mb-4 xl:px-2">
+                                <div class="bg-white dark:bg-gray-800 shadow xl:flex lg:flex md:flex p-5 rounded">
+                                    <div class="md:w-4/6 mb-4 xl:mb-0 lg:mb-0 md:mb-0">
+                                        <a tabindex="0"
+                                           class="focus:outline-none text-gray-800 dark:text-gray-100">
+                                            <p class="text-lg  mb-3 font-normal">
+                                                <u>{{ class_type.name }}</u>
+                                            </p>
+                                        </a>
+                                        <p tabindex="0"
+                                           class="focus:outline-none text-sm text-gray-600 dark:text-gray-400 font-normal">
+{#                                            {{ class_type.description[:50] ~ '...' }}#}
+                                        </p>
+                                    </div>
+                                    <div class="xl:w-3/6 lg:w-3/6 md:w-3/6 flex justify-end flex-col xl:items-end lg:items-end md:items-end items-start">
+                                        <div tabindex="0" aria-label="blue background badge" class="focus:outline-none bg-blue-700 h-6 px-2 mb-4 md:mb-0 rounded-md flex items-center justify-center">
+                                            <span class="text-xs text-white font-normal">{{ class_type.type ?? "N/C" }}</span>
+                                        </div>
+                                        <a href="{{ path('class_type_show', {"id" : class_type.id}) }}" class="my-2 bg-white transition duration-150 ease-in-out hover:bg-gray-100 hover:text-indigo-600 rounded border border-indigo-700 text-indigo-700 px-6 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-offset-2  focus:ring-indigo-700">
+                                            Voir plus
+                                        </a>
+                                    
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {{ include('components/pagination.html.twig', {"pagination" : class_types}) }}
+            </div>
+        </div>
+        <!-- Cards End -->
+    </div>
+{% endblock %}
