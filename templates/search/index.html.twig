@@ -12,7 +12,7 @@
 				category</p>
 			<div class="w-full flex flex-row items-center">
 				<div class="w-1/2 sm:px-0 px-4 md:py-14 py-8 flex items-center justify-between md:justify-center">
-					<a href="{{ path('search', {'category' : 'classesSpells'}) }}"
+					<a href="{{ path('search', {'category' : 'classesSpells', 'limit': 1}) }}"
 					   class="focus:outline-none text-xl md:text-2xl font-medium leading-5 lg:leading-6 cursor-pointer hover:underline focus:underline text-gray-800 dark:text-white">
 						Classes
 						->
@@ -54,9 +54,13 @@
 			{% include("search/BestiarySpells.html.twig") %}
 		{% elseif category == 'spellsBestiary' %}
 			{% include("search/spellsBestiary.html.twig") %}
-			{% endif %}
+		{% elseif category == 'classesSpells' %}
+			{% include("search/classesSpells.html.twig") %}
+		{% elseif category == 'spellsClasses' %}
+			{% include("search/spellsClasses.html.twig") %}
+		{% endif %}
 		{% if category == "full" %}
-			Full
+			<section id="fullSearch"></section>
 		{% endif %}
 	{% endif %}
 {% endblock %}
@@ -65,5 +69,17 @@
 	<script>
         const page = "{{ app.request.get('category') }}"
 	</script>
-	{{ encore_entry_script_tags('search') }}
+	{% if category %}
+		{% if category == "bestiarySpells" %}
+		{% elseif category == 'spellsBestiary' %}
+		{% elseif category == 'classesSpells' %}
+		{% elseif category == 'spellsClasses' %}
+			{{ encore_entry_script_tags('spellClasses') }}
+		{% elseif category == "full" %}
+			{{ encore_entry_script_tags('fullSearch') }}
+		{% endif %}
+		
+		
+		{{ encore_entry_script_tags('search') }}
+	{% endif %}
 {% endblock %}

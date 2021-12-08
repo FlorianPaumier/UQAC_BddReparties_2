@@ -9,7 +9,7 @@ const BeastCard = ({monster}) => {
                 className="xl:w-3/6 lg:w-3/6 md:w-3/6 mb-4 xl:mb-0 lg:mb-0 md:mb-0">
                 <a tabIndex="0"
                    className="text-gray-800 dark:text-gray-100"
-                   href="{{ path('beast_show', {'id' : monster.id}) }}">
+                   href={`/beast/${monster.id}`}>
                     <p className="text-lg  mb-3 font-normal underline">{monster.name}</p>
                 </a>
                 <p tabIndex="0"

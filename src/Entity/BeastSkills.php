@@ -28,6 +28,12 @@ class BeastSkills
      */
     private $beast;
 
+    public function __toString(
+    ): string
+    {
+        return $this->getValue();
+    }
+
     public function getId(): ?int
     {
         return $this->id;

@@ -11,6 +11,7 @@ use JMS\Serializer\Annotation as Serializer;
 /**
  * @ORM\Entity(repositoryClass=SpellRepository::class)
  * @Serializer\ExclusionPolicy("all")
+ * @ORM\Table()
  */
 class Spell
 {
@@ -171,6 +172,27 @@ class Spell
      * @Serializer\Groups({"spell", "spell_light"})
      */
     private ?string $image;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $domain;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private ?bool $divineFocus;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private ?bool $focus;
+
+    /**
+     * @var string
+     * @ORM\Column(name="documents", type="tsvector")
+     */
+    private $documents = "";
 
     public function __construct()
     {
@@ -489,6 +511,62 @@ class Spell
     public function setImage(?string $image): self
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getDomain(): ?string
+    {
+        return $this->domain;
+    }
+
+    public function setDomain(?string $domain): self
+    {
+        $this->domain = $domain;
+
+        return $this;
+    }
+
+    public function getFocus(): ?bool
+    {
+        return $this->focus;
+    }
+
+    public function setFocus(?bool $focus): self
+    {
+        $this->focus = $focus;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDocuments(
+    ): string
+    {
+        return $this->documents;
+    }
+
+    /**
+     * @param $documents
+     * @return Spell
+     */
+    public function setDocuments(
+        $documents
+    ): Spell {
+        $this->documents = $documents;
+        return $this;
+    }
+
+    public function getDivineFocus(): ?bool
+    {
+        return $this->divineFocus;
+    }
+
+    public function setDivineFocus(?bool $divineFocus): self
+    {
+        $this->divineFocus = $divineFocus;
 
         return $this;
     }

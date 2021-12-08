@@ -49,7 +49,7 @@ const BeastFilter = ({
     }
 
     const handleSubType = (data) => {
-        form["subTypes"] = data.map(item => item.name)
+        form["subTypes"] = data.map(item => item)
         setForm(form)
     }
 
@@ -85,6 +85,7 @@ const BeastFilter = ({
         setForm(form)
     }
 
+    console.log(subTypes)
     return <form
         id="search-form"
         onSubmit={submitForm}

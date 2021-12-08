@@ -78,9 +78,10 @@ class BeastController extends AbstractController
         BeastSubTypeRepository $beastSubTypeRepository,
         BeastRepository $beastRepository,
     ) {
+        $subtype =  $beastSubTypeRepository->createQueryBuilder('st')->select("st.name")->orderBy("st.name", "ASC")->getQuery()->getArrayResult();
         return [
             "types" => $beastTypeRepository->findBy([], ["value" => "ASC"]),
-            "subTypes" => $beastSubTypeRepository->findBy([], ["name" => "ASC"])
+            "subTypes" => array_map(fn($subType) => $subType["name"], $subtype)
         ];
     }
 

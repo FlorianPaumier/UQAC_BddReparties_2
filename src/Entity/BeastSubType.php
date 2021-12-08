@@ -37,6 +37,12 @@ class BeastSubType
      */
     private Collection $beasts;
 
+    public function __toString(
+    ): string
+    {
+        return $this->name;
+    }
+
     public function __construct()
     {
         $this->beasts = new ArrayCollection();

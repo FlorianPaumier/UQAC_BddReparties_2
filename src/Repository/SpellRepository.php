@@ -4,6 +4,9 @@ namespace App\Repository;
 
 use App\Entity\Spell;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Result;
 use Doctrine\Persistence\ManagerRegistry;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 use function Doctrine\ORM\QueryBuilder;
@@ -138,5 +141,36 @@ class SpellRepository extends ServiceEntityRepository
         $q->setParameters($params);
         dump($q->getQuery()->getSQL());
         return $q;
+    }
+
+    public function fullText(
+        string $search
+    )
+    {
+        /** @var Connection $conn */
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "SELECT spell.name as name, spell.id as id FROM spell ";
+
+        $words = explode(" ", $search);
+        $params = [];
+        foreach ($words as $key => $word){
+            if ($key == 0) {
+                $sql .=
+                    " WHERE documents @@ to_tsquery(:fullText$key)";
+            }else{
+                $sql .=
+                    " AND documents @@ to_tsquery(:fullText$key)";
+            }
+
+            $index = "fullText$key";
+            $params[$index] = $word;
+        }
+        /** @var Statement $stmt */
+        $stmt = $conn->prepare($sql);
+        /** @var Result $result */
+        $result = $stmt->execute($params);
+
+        return $result->fetchAllAssociative();
     }
 }

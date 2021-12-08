@@ -47,4 +47,14 @@ class ClassSpellRepository extends ServiceEntityRepository
         ;
     }
     */
+    public function findAllArray(
+    )
+    {
+        return $this->createQueryBuilder("c")
+        ->select("c", "t", "s")
+        ->innerJoin("c.classType", "t")
+        ->innerJoin("c.spell", "s")
+            ->orderBy("s.name", 'ASC')
+        ->getQuery()->getArrayResult();
+    }
 }

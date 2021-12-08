@@ -1,3 +1,18 @@
+<div class="2xl:container 2xl:mx-auto">
+	<div class="py-6 lg:px-20 md:px-6 px-4">
+		{% include 'components/pageHeader.html.twig' with {title: "Spells Index", countProduct: 0, currentPath: "Home > Spells"} %}
+		<ul class="md:flex-row md:flex hidden w-100 justify-between mx-8 text-center">
+			{% for i in range('A','Z') %}
+				<li class="{% if loop.index0 != 0 %}border-l-4 border-black{% endif %} text-center px-4">
+					<a href="{{ path('search', {'category': app.request.get('category'), "start_with" : i}) }}">{{ i }}</a>
+				</li>
+			{% endfor %}
+		</ul>
+		<select name=""
+		        class="md:hidden"
+		        id=""></select>
+	</div>
+</div>
 <div id="spellsBestiary" class="flex flex-col w-full xl:flex-row justify-center">
 	<!-- Cards Start -->
 	<div class="flex flex-col justify-start">
@@ -7,16 +22,14 @@
 					<div class="xl:w-3/12 lg:w-4/12 md:w-6/12 mb-4 xl:px-2">
 						<div class="bg-white dark:bg-gray-800 shadow xl:flex lg:flex md:flex p-5 rounded">
 							<div class="md:w-4/6 mb-4 xl:mb-0 lg:mb-0 md:mb-0">
-								<a tabindex="0"
-								   class="focus:outline-none text-gray-800 dark:text-gray-100">
-									<p class="text-lg  mb-3 font-normal">
-										<u>{{ row.name }}</u>
-									</p>
+								<a tabindex="0" href="{{ path('spell_show', {'id' : row.id}) }}" class="focus:outline-none text-gray-800 dark:text-gray-100 cursor-pointer text-lg  mb-3 font-normal underline">
+										{{ row.name }}
+									
 								</a>
 								<p tabindex="0"
 								   class="focus:outline-none text-sm text-gray-600 dark:text-gray-400 font-normal">
 									{% for beast in row.beasts %}
-										<a class="text-blue-500 underline background-transparent font-bold text-xs outline-none focus:outline-none ease-linear transition-all duration-150"
+										<a class="text-blue-500 underline background-transparent font-bold text-xs outline-none focus:outline-none ease-linear transition-all duration-150  cursor-pointer"
 										   href="{{ path('beast_show', {'id' : beast.id}) }}">
 											{{ beast.name }}
 										</a>{% if not loop.last %},{% endif %}

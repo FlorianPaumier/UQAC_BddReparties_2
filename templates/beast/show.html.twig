@@ -3,32 +3,289 @@
 {% block title %}Beast{% endblock %}
 
 {% block body %}
-    <h1>Beast</h1>
-
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ beast.id }}</td>
-            </tr>
-            <tr>
-                <th>Xp</th>
-                <td>{{ beast.xp }}</td>
-            </tr>
-            <tr>
-                <th>Name</th>
-                <td>{{ beast.name }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ beast.description }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a href="{{ path('beast_index') }}">back to list</a>
-
-    <a href="{{ path('beast_edit', {'id': beast.id}) }}">edit</a>
-
-    {{ include('beast/_delete_form.html.twig') }}
+	<a href="{{ app.request.headers.get('referer') }}">Retour</a>
+	<section
+			class="px-8">
+		
+		<h1 class="text-3xl underline text-center">{{ beast.name }}</h1>
+		<section>
+			<label class="underline text-bold">Description
+				:</label>
+			<p>{{ beast.description|raw }}</p>
+		</section>
+		
+		<section
+				class="h-full">
+			<h2 class="text-2xl my-4 underline">
+				Stats</h2>
+			<section>
+				{% if beast.beastStatistiques.count == 0 %}
+					<h3 class="text-lg text-bold">
+						No
+						Stats</h3>
+				{% endif %}
+				<ul>
+					{% for key, stat in beast.beastStatistiques %}
+						<li>{{ stat.name }} : {{ stat.value }}</li>
+					{% endfor %}
+				</ul>
+			</section>
+			<h2 class="underline text-2xl my-4">
+				Caractéristique</h2>
+			<section
+					class="grid grid-cols-2 justify-center content-center align-center">
+				<table>
+					<tbody>
+					<tr class="pb-4">
+						<td class="w-32">
+							Type
+							:
+						</td>
+						<td class="type">
+							{{ beast.beastType ? beast.beastType.value : "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							SubType
+							:
+						</td>
+						<td>
+							{{ beast.subTypes|join(",") }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Hp
+							:
+						</td>
+						<td class="hp">
+							{{ beast.hp }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Reach
+							:
+						</td>
+						<td>
+							{{ beast.reach ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Size
+							:
+						</td>
+						<td>
+							{{ beast.size ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Xp
+							:
+						</td>
+						<td>
+							{{ beast.xp ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							AC
+							:
+						</td>
+						<td>
+							{{ beast.ac ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Aligment
+							:
+						</td>
+						<td>
+							{{ beast.alignmen ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							CR
+							:
+						</td>
+						<td>
+							{{ beast.cr ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Space
+							:
+						</td>
+						<td>
+							{{ beast.space ?? "N/C" }}
+						</td>
+					</tr>
+					<tr class="pb-4">
+						<td>
+							Feats
+							:
+						</td>
+						<td>
+							{{ beast.feats|join(",") }}
+						</td>
+					</tr>
+					</tbody>
+				</table>
+				<table>
+					<tbody>
+					<tr class="pb-4">
+						<td class="w-28">
+							Language
+							:
+						</td>
+						<td>
+							{{ beast.languages|join(", ") }}
+						</td>
+					<tr>
+						<td>
+							Skills
+							:
+						</td>
+						<td>
+							{{ beast.beastSkills|join(', ') }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							HD
+							:
+						</td>
+						<td>
+							{{ beast.hd ?? "N/C" }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Melee :
+						</td>
+						<td>
+							{{ beast.melee ?? "N/C" }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Ranged :
+						</td>
+						<td>
+							{{ beast.ranged ?? "N/C" }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Racial
+							Mods :
+						</td>
+						<td>
+							{{ beast.racialMods|join(", ") }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							SQ :
+						</td>
+						<td>
+							{{ beast.sQs|join(", ") }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Speed :
+						</td>
+						<td>
+							{{ beast.speed ?? "N/C" }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Treasure :
+						</td>
+						<td>
+							{{ beast.treasure ?? "N/C" }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Groups :
+						</td>
+						<td>
+							{{ beast.groups ?? "N/C" }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Environments :
+						</td>
+						<td>
+							{{ beast.environments|join(", ") }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Organizations :
+						</td>
+						<td>
+							{{ beast.organizations|join(', ') }}
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Gears :
+						</td>
+						<td>
+							{{ beast.gears|join(", ") }}
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</section>
+		</section>
+		<div>
+			<h2 class="py-4 text-2xl text-bold underline">
+				Spells</h2>
+			{% if beast.spells.count > 0 %}
+				<section
+						class="container px-4">
+					<div class="container mx-auto px-6 py-10">
+						<div class="xl:flex lg:flex md:flex xl:w-full md:justify-center w-11/12 mx-auto lg:justify-center xl:justify-betweens flex-wrap justify-between lg:flex-col lg:items-center xl:flex-row xl:justify-between">
+							{% for spell in beast.spells %}
+								<div class="xl:w-6/12 lg:w-2/4 md:w-9/12 mb-4 xl:px-2">
+									<div class="bg-white dark:bg-gray-800 shadow xl:flex lg:flex md:flex p-5 rounded">
+										<div class="xl:w-3/6 lg:w-3/6 md:w-3/6 mb-4 xl:mb-0 lg:mb-0 md:mb-0">
+											<a tabindex="0"
+											   class="text-gray-800 dark:text-gray-100"
+											   href="{{ path('spell_show', {'id' : spell.id}) }}">
+												<p class="text-lg  mb-3 font-normal">{{ spell.name }}</p>
+											</a>
+											<p tabindex="0"
+											   class="focus:outline-none text-sm text-gray-600 dark:text-gray-400 font-normal">{{ spell.description[:50] }}
+												...</p>
+										</div>
+										<div class="xl:w-3/6 lg:w-3/6 md:w-3/6 flex justify-end flex-col xl:items-end lg:items-end md:items-end items-start">
+											<p tabindex="0"
+											   class="focus:outline-none text-xs text-indigo-700 bg-indigo-200 px-3 rounded mb-2 font-normal py-1">{{ spell.school ? spell.school.name : "N/C" }}</p>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</section>
+			{% else %}
+				<h3 class="text-lg">
+					No
+					Spell</h3>
+			{% endif %}
+		</div>
+	</section>
 {% endblock %}

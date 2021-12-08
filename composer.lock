@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "88630b4bf89defc3021685f20d9e57bf",
+    "content-hash": "b6d479cdaa69ef2ccfa2c3460f4cb94d",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -2776,6 +2776,83 @@
                 }
             ],
             "time": "2021-10-05T19:41:46+00:00"
+        },
+        {
+            "name": "martin-georgiev/postgresql-for-doctrine",
+            "version": "v1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/martin-georgiev/postgresql-for-doctrine.git",
+                "reference": "093fb7d653bd51b5993c9d29c2282de2b6ba404c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/martin-georgiev/postgresql-for-doctrine/zipball/093fb7d653bd51b5993c9d29c2282de2b6ba404c",
+                "reference": "093fb7d653bd51b5993c9d29c2282de2b6ba404c",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": "~2.5||~3.0",
+                "ext-ctype": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": "^7.2||^8.0"
+            },
+            "require-dev": {
+                "doctrine/orm": "~2.5||~3.0",
+                "friendsofphp/php-cs-fixer": "^3.2",
+                "php-coveralls/php-coveralls": "^2.5",
+                "phpstan/phpstan": "^1.1",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpunit/phpunit": "^8.5||^9.5",
+                "qossmic/deptrac-shim": "^0.14",
+                "symfony/cache": "^4.0||^5.0||^6.0"
+            },
+            "suggest": {
+                "doctrine/orm": "~2.5||~3.0",
+                "php": "^7.4||^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MartinGeorgiev\\": "src/MartinGeorgiev/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Martin Georgiev",
+                    "email": "martin.georgiev@gmail.com",
+                    "role": "author"
+                }
+            ],
+            "description": "Adds PostgreSQL enhancements to Doctrine. Provides support for JSON, JSONB and some array data types. Provides functions, operators and common expressions used when working with JSON data, arrays and features related to text search.",
+            "keywords": [
+                "array data types",
+                "dbal",
+                "doctrine",
+                "json",
+                "jsonb",
+                "martin georgiev",
+                "postgres",
+                "postgresql",
+                "text search",
+                "tsvector"
+            ],
+            "support": {
+                "issues": "https://github.com/martin-georgiev/postgresql-for-doctrine/issues",
+                "source": "https://github.com/martin-georgiev/postgresql-for-doctrine/tree/v1.6.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/martin-georgiev",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-11-16T17:44:07+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -9620,6 +9697,51 @@
             "time": "2021-09-17T08:44:23+00:00"
         },
         {
+            "name": "vertigolabs/doctrine-full-text-postgres",
+            "version": "1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jaimz22/DoctrineFullTextPostrgres.git",
+                "reference": "7e9ed4b49d0f1cfe41d6bafd3fa426b406177512"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jaimz22/DoctrineFullTextPostrgres/zipball/7e9ed4b49d0f1cfe41d6bafd3fa426b406177512",
+                "reference": "7e9ed4b49d0f1cfe41d6bafd3fa426b406177512",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/orm": "~2.4",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.4",
+                "phpunit/phpunit-mock-objects": "~2.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "VertigoLabs\\DoctrineFullTextPostgres\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "James Murray",
+                    "email": "jaimz@vertigolabs.org"
+                }
+            ],
+            "description": "Tools to use full-text searching in Postgresql with Doctrine",
+            "support": {
+                "issues": "https://github.com/jaimz22/DoctrineFullTextPostrgres/issues",
+                "source": "https://github.com/jaimz22/DoctrineFullTextPostrgres/tree/1.1.2"
+            },
+            "time": "2021-10-04T20:55:29+00:00"
+        },
+        {
             "name": "webmozart/assert",
             "version": "1.10.0",
             "source": {
@@ -11742,7 +11864,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,

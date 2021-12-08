@@ -37,7 +37,7 @@ const SpellCard = ({spell}) => {
             }</p>
         <p className="font-semibold dark:text-gray-300 text-xl leading-5 text-gray-800 mt-4">
             {
-                spell.subSchoolName.length > 0 ? spell.subSchoolName : 'N/C'
+                spell.subSchoolsName !== null && spell.subSchoolName.length > 0 ? spell.subSchoolName : 'N/C'
             }</p>
         <p className="font-normal dark:text-gray-300 text-base leading-4 text-gray-600 mt-4">
             {spell.shortDescription.length > 1 ? spell.shortDescription : spell.description.slice(0,50)+'...'}</p>

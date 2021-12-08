@@ -10,9 +10,14 @@ use App\Entity\BeastType;
 use App\Entity\ClassSpell;
 use App\Entity\ClassType;
 use App\Entity\Component;
+use App\Entity\Environment;
 use App\Entity\FeatsBeast;
+use App\Entity\Gear;
+use App\Entity\Language;
+use App\Entity\Organization;
 use App\Entity\School;
 use App\Entity\Spell;
+use App\Entity\SQ;
 use App\Entity\SubSchool;
 use Doctrine\ORM\EntityManagerInterface;
 use Goutte\Client;
@@ -26,6 +31,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
+use Symfony\Contracts\Cache\CacheInterface;
 
 #[AsCommand(
     name: 'app:import-data',
@@ -39,14 +45,16 @@ class ImportDataCommand extends Command
     ): void
     {
         $this
-            ->addArgument('file',
-                InputArgument::REQUIRED,
-                'Type of files');
+            ->addOption("spells")
+            ->addOption("bestiary")
+            ->addOption("site")
+            ->addOption("images");
     }
 
     public function __construct(
-        string $name = null,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private CacheInterface $cache,
+        string $name = null
     ) {
         parent::__construct($name);
         $this->client = new Client();
@@ -58,42 +66,10 @@ class ImportDataCommand extends Command
     ): int {
         $io = new SymfonyStyle($input,
             $output);
-        $arg1 = $input->getArgument('file');
-
-        if ($arg1) {
-            $file = dirname(__DIR__,
-                    2) . "/var/import/$arg1.csv";
+        $args = $input->getOptions();
+        foreach ($args as $arg => $value) {
+            $this->exec($arg);
         }
-
-        if ($arg1 !== "site" && $arg1 !== "images") {
-
-            $csv = Reader::createFromPath($file,
-                'r');
-            $csv->setHeaderOffset(0); //set the CSV header offset
-
-//get 25 records starting from the 11th row
-            $stmt = Statement::create();
-
-            $records = $stmt->process($csv);
-        }
-
-        $rows = [];
-
-        switch ($arg1) {
-            case "spells":
-                $this->generateSpellsJson($records);
-                break;
-            case "bestiary":
-                $this->generateBestiaryJson($records);
-                break;
-            case "site":
-                $this->scrapeWebSite();
-                break;
-            case "images":
-                $this->insertImage();
-                break;
-        }
-
 
         $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
 
@@ -109,66 +85,101 @@ class ImportDataCommand extends Command
                 2) . "/beast-spell.json"),
             true);
 
-        foreach ($records as $record) {
-            $newBeast = [
-                "name" => $record["Name"],
-                "cr" => $record["CR"],
-                "xp" => $record["XP"],
-                "race" => $record["Race"],
-                "alignment" => $record["Alignment"],
-                "size" => $record["Size"],
-                "type" => $record["Type"],
-                "ac" => $record["AC"],
-                "hp" => $record["HP"],
-                "hd" => $record["HD"],
-                "melee" => $record["Melee"],
-                "ranged" => $record["Ranged"],
-                "space" => $record["Space"],
-                "reach" => $record["Reach"],
-                "stat" => [
-                    "str" => $record["Str"],
-                    "dex" => $record["Dex"],
-                    "con" => $record["Con"],
-                    "int" => $record["Int"],
-                    "wis" => $record["Wis"],
-                    "cha" => $record["Cha"],
-                ],
-                "feats" => explode(",",
-                    $record["Feats"]),
-                "skills" => explode(",",
-                    $record["Skills"]),
-                "subtype" => [],
-            ];
+        $rows = $this->cache->get("beasts",
+            function (
+            ) use
+            (
+                $records,
+                $rows
+            ) {
+                foreach ($records as $record) {
+                    $newBeast = [
+                        "name" => $record["Name"],
+                        "cr" => $record["CR"],
+                        "xp" => $record["XP"],
+                        "race" => $record["Race"],
+                        "alignment" => $record["Alignment"],
+                        "size" => $record["Size"],
+                        "type" => $record["Type"],
+                        "ac" => $record["AC"],
+                        "hp" => $record["HP"],
+                        "hd" => $record["HD"],
+                        "melee" => $record["Melee"],
+                        "ranged" => $record["Ranged"],
+                        "space" => $record["Space"],
+                        "speed" => $record["Speed"],
+                        "reach" => $record["Reach"],
+                        "stat" => [
+                            "str" => $record["Str"],
+                            "dex" => $record["Dex"],
+                            "con" => $record["Con"],
+                            "int" => $record["Int"],
+                            "wis" => $record["Wis"],
+                            "cha" => $record["Cha"],
+                        ],
+                        "racialMods" => explode(",",
+                            $record["RacialMods"]),
+                        "language" => explode(",",
+                            $record["Languages"]),
+                        "sq" => explode(",",
+                            $record["SQ"]),
+                        "environment" => explode(",",
+                            $record["Environment"]),
+                        "organization" => explode(",",
+                            $record["Organization"]),
+                        "treasure" => $record["Treasure"],
+                        "group" => $record["Group"],
+                        "gear" => explode(",",
+                            $record["Gear"]),
+                        "feats" => explode(",",
+                            $record["Feats"]),
+                        "skills" => explode(",",
+                            $record["Skills"]),
+                        "subtype" => [],
+                    ];
 
-            $rows[$record["Name"]] = key_exists($record["Name"],
-                $rows) ? array_merge($rows[$record["Name"]],
-                $newBeast) : $newBeast;
+                    $rows[$record["Name"]] = key_exists($record["Name"],
+                        $rows) ? array_merge($rows[$record["Name"]],
+                        $newBeast) : $newBeast;
 
-            for ($i = 1; $i <= 6; $i++) {
-                if (key_exists("subtype$i",
-                        $record) && !empty($record["subtype$i"])) {
-                    $rows[$record["Name"]]["subtype"][] = $record["subtype$i"];
+                    for ($i = 1; $i <= 6; $i++) {
+                        if (key_exists("subtype$i",
+                                $record) && !empty($record["subtype$i"])) {
+                            $rows[$record["Name"]]["subtype"][] = $record["subtype$i"];
+                        }
+                    }
                 }
-            }
-        }
+
+                return $rows;
+            });
+
+
+        dump("Fin de lecture");
 
         $i = 0;
 
         foreach ($rows as $index => $row) {
-            if (empty($index)) continue;
+            if (empty($index)) {
+                continue;
+            }
 
+            #region init object
+            $index = trim($index);
             $beast = $this->entityManager->getRepository(Beast::class)->findOneBy(["name" => $index]);
 
             $xp = $beast?->getXp() ?? (key_exists("xp",
                     $row) ? floatval($row["xp"]) : 0);
             $description = $beast?->getDescription() ?? (key_exists("description",
-                        $row) ? $row["description"] : "");
+                    $row) ? $row["description"] : "");
             $melee = $beast?->getMelee() ?? (key_exists("melee",
                     $row) ? $row["melee"] : "");
             $name = $beast?->getName() ?? $row["name"];
 
-            $beast = (new Beast())
-                ->setName($name)
+            if (!$beast) {
+                $beast = (new Beast());
+            }
+
+            $beast->setName($name)
                 ->setXp($xp)
                 ->setDescription($description)
                 ->setMelee($melee)
@@ -182,10 +193,13 @@ class ImportDataCommand extends Command
                     $row) ? intval($row["ac"]) : 0)
                 ->setSpace($row["space"] ?? "")
                 ->setSize($row["size"] ?? "")
+                ->setSpeed($row["speed"] ?? 0)
+                ->setTreasure($row["treasure"] ?? "")
+                ->setGroups($row["group"] ?? "")
                 ->setReach($row["reach"] ?? "")
                 ->setRanged($row["ranged"] ?? "")
                 ->setAlignment($row["alignment"] ?? "");
-
+#endregion
             if (key_exists("stat",
                     $row) && $beast->getBeastStatistiques()->count() == 0) {
                 foreach ($row["stat"] as $key => $stats) {
@@ -206,8 +220,9 @@ class ImportDataCommand extends Command
             }
             if (key_exists("type",
                     $row) && !$beast->getType()) {
-                $types = explode(",", $row["type"]);
-                foreach ($types as $typeName){
+                $types = explode(",",
+                    $row["type"]);
+                foreach ($types as $typeName) {
                     $type = $this->entityManager->getRepository(BeastType::class)->findOneBy(["value" => $typeName]);
                     if (!$type) {
                         $type = (new BeastType())->setValue($typeName);
@@ -250,7 +265,70 @@ class ImportDataCommand extends Command
                     $this->entityManager->persist($sub);
                 }
             }
-
+            if (key_exists("language",
+                    $row) && $beast->getLanguages()->count() == 0) {
+                foreach ($row["language"] as $language) {
+                    $lang = $this->entityManager->getRepository(Language::class)->findOneBy(["name" => $language]);
+                    if (!$lang) {
+                        $lang = (new Language())->setName($language);
+                    }
+                    $lang->addBeast($beast);
+                    $this->entityManager->persist($lang);
+                }
+            }
+            if (key_exists("gear",
+                    $row) && $beast->getGears()->count() == 0) {
+                foreach ($row["gear"] as $gear) {
+                    $g = $this->entityManager->getRepository(Gear::class)->findOneBy(["value" => $gear]);
+                    if (!$g) {
+                        $g = (new Gear())->setValue($gear);
+                    }
+                    $g->addBeast($beast);
+                    $this->entityManager->persist($g);
+                }
+            }
+            if (key_exists("environment",
+                    $row) && $beast->getEnvironments()->count() == 0) {
+                foreach ($row["environment"] as $environment) {
+                    $env = $this->entityManager->getRepository(Environment::class)->findOneBy(["name" => $environment]);
+                    if (!$env) {
+                        $env = (new Environment())->setName($environment);
+                    }
+                    $env->addBeast($beast);
+                    $this->entityManager->persist($env);
+                }
+            }
+            if (key_exists("organization",
+                    $row) && $beast->getOrganizations()->count() == 0) {
+                foreach ($row["organization"] as $orga) {
+                    $organization = $this->entityManager->getRepository(Organization::class)->findOneBy(["name" => $orga]);
+                    if (!$organization) {
+                        $organization = (new Organization())->setName($orga);
+                    }
+                    $organization->addBeast($beast);
+                    $this->entityManager->persist($organization);
+                }
+            }
+            if (key_exists("sq",
+                    $row) && $beast->getSQs()->count() == 0) {
+                foreach ($row["sq"] as $sqs) {
+                    $sq = $this->entityManager->getRepository(SQ::class)->findOneBy(["name" => $sqs]);
+                    if (!$sq) {
+                        $sq = (new SQ())->setName($sqs);
+                    }
+                    $sq->addBeast($beast);
+                    $this->entityManager->persist($sq);
+                }
+            }
+            if (key_exists("racialMods",
+                    $row) && $beast->getRacialMods()->count() == 0) {
+                foreach ($row["racialMods"] as $mod) {
+                    $regex = "/([\+|\-]\d)\s(\w+.*)+/";
+                    preg_match_all($regex,
+                        $mod,
+                        $matches);
+                }
+            }
             $this->entityManager->persist($beast);
             if ($i % 50) {
                 $this->entityManager->flush();
@@ -262,7 +340,6 @@ class ImportDataCommand extends Command
     private function generateSpellsJson(
         TabularDataReader $records
     ): void {
-
         $rows = [];
         foreach ($records as $record) {
             $rows[] = [
@@ -288,10 +365,15 @@ class ImportDataCommand extends Command
                 "duration" => $record["duration"],
                 "dismissible" => $record["dismissible"],
                 "shapeable" => $record["shapeable"],
-                "saving_throw" => $record["saving_throw"],
-                "spell_resistance" => $record["spell_resistance"],
+                "saving_throw" => explode(";",
+                    $record["saving_throw"])[0],
+                "spell_resistance" => explode(";",
+                    $record["spell_resistance"])[0],
                 "description" => $record["description"],
-                "short_description" => $record["short_description"]
+                "short_description" => $record["short_description"],
+                "divine_focus" => $record["divine_focus"],
+                "focus" => $record["focus"],
+                "domain" => $record["domain"]
             ];
         }
 
@@ -302,18 +384,28 @@ class ImportDataCommand extends Command
         foreach ($rows as $key => $spell) {
             if (!key_exists($spell["school"],
                 $schools)) {
-                $school = (new School())->setName($spell["school"]);
+                $school = $this->entityManager->getRepository(School::class)->findOneBy(["name" => $spell["school"]]);
+                if (!$school) {
+                    $school = (new School())->setName($spell["school"]);
+                    $this->entityManager->persist($school);
+                }
                 $schools[$spell["school"]] = $school;
-                $this->entityManager->persist($school);
             }
             if (!key_exists($spell["subschool"],
                 $subSchools)) {
-                $subSchool = (new SubSchool())->setName($spell["subschool"]);
+                $subSchool = $this->entityManager->getRepository(SubSchool::class)->findOneBy(["name" => $spell["subschool"]]);
+                if (!$subSchool) {
+                    $subSchool = (new SubSchool())->setName($spell["subschool"]);
+                    $this->entityManager->persist($subSchool);
+                }
                 $subSchools[$spell["subschool"]] = $subSchool;
-                $this->entityManager->persist($subSchool);
             }
 
-            $newSpell = (new Spell())
+            $newSpell = $this->entityManager->getRepository(Spell::class)->findOneBy(["name" => $spell["name"]]);
+            if (!$newSpell) {
+                $newSpell = (new Spell())->setDocuments(["data" => ""]);
+            }
+            $newSpell
                 ->setName($spell["name"])
                 ->setArea($spell["area"])
                 ->setSchool($schools[$spell["school"]])
@@ -330,6 +422,10 @@ class ImportDataCommand extends Command
                 ->setSavingThrow($spell["saving_throw"])
                 ->setSpellResistance($spell["spell_resistance"])
                 ->setDescription($spell["description"])
+                ->setDomain($spell["domain"])
+                ->setDescription($spell["description"])
+                ->setFocus($spell["focus"] == 1)
+                ->setDivineFocus($spell["divine_focus"] == 1)
                 ->setShortDescription($spell["short_description"]);
 
             foreach ($spell["spell_level"] as $spellLevel) {
@@ -341,19 +437,44 @@ class ImportDataCommand extends Command
                     foreach ($classes as $className) {
                         if (!key_exists($className,
                             $class)) {
-                            $classType = (new ClassType())->setName($className);
+                            $classType = $this->entityManager->getRepository(ClassType::class)->findOneBy(["name" => $className]);
+                            if (!$classType) {
+                                $classType = (new ClassType())->setName($className);
+                                $this->entityManager->persist($classType);
+                            }
                             $class[$className] = $classType;
-                            $this->entityManager->persist($classType);
                         }
-                        $classSpell = (new ClassSpell())->setClassType($class[$className])->setLevel(intval($spellLevel[1]))->setSpell($newSpell);
-                        $this->entityManager->persist($classSpell);
+                        $classSpell = $this->entityManager->getRepository(ClassSpell::class)->findOneBy([
+                            "classType" => $class[$className],
+                            'level' => intval($spellLevel[1]),
+                            'spell' => $newSpell
+                        ]);
+
+                        if (!$classSpell) {
+                            $classSpell = (new ClassSpell())->setClassType($class[$className])->setLevel(intval($spellLevel[1]))->setSpell($newSpell);
+                            $this->entityManager->persist($classSpell);
+                        }
                     }
                 } else {
                     if (!key_exists($spellLevel[0],
                         $class)) {
-                        $classType = (new ClassType())->setName($spellLevel[0]);
+                        $classType = $this->entityManager->getRepository(ClassType::class)->findOneBy(["name" => $spellLevel[0]]);
+                        if (!$classType) {
+                            $classType = (new ClassType())->setName($spellLevel[0]);
+                            $this->entityManager->persist($classType);
+                        }
                         $class[$spellLevel[0]] = $classType;
-                        $this->entityManager->persist($class[$spellLevel[0]]);
+                    }
+
+                    $classSpell = $this->entityManager->getRepository(ClassSpell::class)->findOneBy([
+                        "classType" => $class[$spellLevel[0]],
+                        'level' => intval($spellLevel[1]),
+                        'spell' => $newSpell
+                    ]);
+
+                    if (!$classSpell) {
+                        $classSpell = (new ClassSpell())->setClassType($class[$spellLevel[0]])->setLevel(intval($spellLevel[1]))->setSpell($newSpell);
+                        $this->entityManager->persist($classSpell);
                     }
                     $classSpell = (new ClassSpell())->setClassType($class[$spellLevel[0]])->setLevel(intval($spellLevel[1]))->setSpell($newSpell);
                     $this->entityManager->persist($classSpell);
@@ -377,9 +498,15 @@ class ImportDataCommand extends Command
                         $components[0]);
                 }
 
-                $component = (new Component())->setValue($string[0])->setDescription($string[1] ?? "");
+                $component = $this->entityManager->getRepository(Component::class)->findOneBy([
+                    "value" => $string[0],
+                    "description" => $string[1] ?? ""
+                ]);
+                if (!$component) {
+                    $component = (new Component())->setValue($string[0])->setDescription($string[1] ?? "");
+                    $this->entityManager->persist($component);
+                }
                 $component->setSpell($newSpell);
-                $this->entityManager->persist($component);
             }
 
             $this->entityManager->persist($newSpell);
@@ -488,7 +615,8 @@ class ImportDataCommand extends Command
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
                 $fileNameWithExtension = $file->getRelativePathname();
-                $name = explode(".", $fileNameWithExtension)[0];
+                $name = explode(".",
+                    $fileNameWithExtension)[0];
                 /** @var Spell[] $spell */
                 $spell = $this->entityManager
                     ->getRepository(Spell::class)
@@ -497,11 +625,62 @@ class ImportDataCommand extends Command
                     ->setParameters(["name" => $name])
                     ->getQuery()->getResult();
 
-                if (count($spell) > 0) {
+                if (!empty($spell)) {
                     $spell[0]->setImage($fileNameWithExtension);
+                } else {
+                    /** @var Beast[] $beast */
+                    $beast = $this->entityManager->getRepository(Beast::class)->createQueryBuilder("b")
+                        ->where("lower(b.name) = :name")
+                        ->setParameter("name",
+                            $name)
+                        ->getQuery()->getResult();
+
+                    if (!empty($beast)) {
+                        $beast[0]->setImage($fileNameWithExtension);
+                    }
                 }
             }
             $this->entityManager->flush();
         }
+    }
+
+    private function exec(
+        mixed $arg
+    ) {
+        switch ($arg) {
+            case "spells":
+                $records = $this->getFile("spells");
+                $this->generateSpellsJson($records);
+                break;
+            case "bestiary":
+                $records = $this->getFile("bestiary");
+                $this->generateBestiaryJson($records);
+                break;
+            case "site":
+                $this->scrapeWebSite();
+                break;
+            case "images":
+                $this->insertImage();
+                break;
+        }
+    }
+
+    private function getFile(
+        string $arg
+    ) {
+
+        $file = dirname(__DIR__,
+                2) . "/var/import/$arg.csv";
+
+        $csv = Reader::createFromPath($file,
+            'r');
+        $csv->setHeaderOffset(0); //set the CSV header offset
+
+//get 25 records starting from the 11th row
+        $stmt = Statement::create();
+
+        $records = $stmt->process($csv);
+
+        return $records;
     }
 }

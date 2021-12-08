@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=BeastRepository::class)
+ * @ORM\Table()
  */
 class Beast
 {
@@ -17,109 +18,160 @@ class Beast
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $xp;
+    private ?int $xp;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\ManyToMany(targetEntity=Spell::class, inversedBy="beasts")
      */
-    private $spells;
+    private Collection $spells;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $description;
+    private ?string $description;
 
     /**
      * @ORM\OneToMany(targetEntity=BeastStatistique::class, mappedBy="beast", orphanRemoval=true)
      */
-    private $beastStatistiques;
+    private Collection $beastStatistiques;
 
     /**
      * @ORM\OneToMany(targetEntity=BeastSkills::class, mappedBy="beast", orphanRemoval=true)
      */
-    private $beastSkills;
+    private Collection $beastSkills;
 
     /**
      * @ORM\ManyToMany(targetEntity=FeatsBeast::class, inversedBy="beasts")
      */
-    private $feats;
+    private Collection $feats;
 
     /**
      * @ORM\ManyToOne(targetEntity=BeastType::class, inversedBy="value")
      * @ORM\JoinColumn(nullable=true)
      */
-    private $beastType;
+    private ?BeastType $beastType;
 
     /**
      * @ORM\ManyToMany(targetEntity=BeastSubType::class, inversedBy="beasts")
      */
-    private $subTypes;
+    private Collection $subTypes;
 
     /**
      * @ORM\Column(type="float")
      */
-    private $cr;
+    private ?float $cr;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $alignment;
+    private ?string $alignment;
 
     /**
      * @ORM\Column(type="string", length=50)
      */
-    private $size;
+    private ?string $size;
 
     /**
      * @ORM\ManyToOne(targetEntity=BeastType::class, inversedBy="beasts")
      * @ORM\JoinColumn(nullable=true)
      */
-    private $type;
+    private ?BeastType $type = null;
 
     /**
      * @ORM\Column(type="float")
      */
-    private $ac;
+    private ?float $ac;
 
     /**
      * @ORM\Column(type="float")
      */
-    private $hp;
+    private ?float $hp;
 
     /**
      * @ORM\Column(type="string", length=50)
      */
-    private $hd;
+    private ?string $hd;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $melee;
+    private ?string $melee;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $ranged;
+    private ?string $ranged;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $space;
+    private ?string $space;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $reach;
+    private ?string $reach;
+
+    /**
+     * @var string|null
+     * @ORM\Column(name="image", type="string", nullable=true)
+     */
+    private ?string $image;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Language::class, mappedBy="beasts")
+     */
+    private Collection $languages;
+
+    /**
+     * @ORM\OneToMany(targetEntity=RacialMod::class, mappedBy="beast")
+     */
+    private Collection $racialMods;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=SQ::class, mappedBy="beast")
+     */
+    private Collection $sQs;
+
+    /**
+     * @ORM\Column(type="text", length=255, nullable=true)
+     */
+    private ?string $speed;
+
+    /**
+     * @ORM\Column(type="text", length=255, nullable=true)
+     */
+    private ?string $treasure;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $groups;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Environment::class, mappedBy="beasts")
+     */
+    private Collection $environments;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Organization::class, mappedBy="beasts")
+     */
+    private Collection $organizations;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Gear::class, mappedBy="beasts")
+     */
+    private Collection $gears;
 
     public function __construct()
     {
@@ -128,6 +180,12 @@ class Beast
         $this->beastSkills = new ArrayCollection();
         $this->feats = new ArrayCollection();
         $this->subTypes = new ArrayCollection();
+        $this->languages = new ArrayCollection();
+        $this->racialMods = new ArrayCollection();
+        $this->sQs = new ArrayCollection();
+        $this->environments = new ArrayCollection();
+        $this->organizations = new ArrayCollection();
+        $this->gears = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -443,6 +501,237 @@ class Beast
     public function setReach(string $reach): self
     {
         $this->reach = $reach;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getImage(
+    ): ?string
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string|null $image
+     */
+    public function setImage(
+        ?string $image
+    ): void {
+        $this->image = $image;
+    }
+
+    /**
+     * @return Collection|Language[]
+     */
+    public function getLanguages(): Collection
+    {
+        return $this->languages;
+    }
+
+    public function addLanguage(Language $language): self
+    {
+        if (!$this->languages->contains($language)) {
+            $this->languages[] = $language;
+            $language->addBeast($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLanguage(Language $language): self
+    {
+        if ($this->languages->removeElement($language)) {
+            $language->removeBeast($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|RacialMod[]
+     */
+    public function getRacialMods(): Collection
+    {
+        return $this->racialMods;
+    }
+
+    public function addRacialMod(RacialMod $racialMod): self
+    {
+        if (!$this->racialMods->contains($racialMod)) {
+            $this->racialMods[] = $racialMod;
+            $racialMod->setBeast($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRacialMod(RacialMod $racialMod): self
+    {
+        if ($this->racialMods->removeElement($racialMod)) {
+            // set the owning side to null (unless already changed)
+            if ($racialMod->getBeast() === $this) {
+                $racialMod->setBeast(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|SQ[]
+     */
+    public function getSQs(): Collection
+    {
+        return $this->sQs;
+    }
+
+    public function addSQ(SQ $sQ): self
+    {
+        if (!$this->sQs->contains($sQ)) {
+            $this->sQs[] = $sQ;
+            $sQ->addBeast($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSQ(SQ $sQ): self
+    {
+        if ($this->sQs->removeElement($sQ)) {
+            $sQ->removeBeast($this);
+        }
+
+        return $this;
+    }
+
+    public function getSpeed(): ?string
+    {
+        return $this->speed;
+    }
+
+    public function setSpeed(string $speed): self
+    {
+        $this->speed = $speed;
+
+        return $this;
+    }
+
+    public function getEnvironment(): ?string
+    {
+        return $this->environment;
+    }
+
+    public function setEnvironment(string $environment): self
+    {
+        $this->environment = $environment;
+
+        return $this;
+    }
+
+    public function getTreasure(): ?string
+    {
+        return $this->treasure;
+    }
+
+    public function setTreasure(string $treasure): self
+    {
+        $this->treasure = $treasure;
+
+        return $this;
+    }
+
+    public function getGroups(): ?string
+    {
+        return $this->groups;
+    }
+
+    public function setGroups(string $groups): self
+    {
+        $this->groups = $groups;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Environment[]
+     */
+    public function getEnvironments(): Collection
+    {
+        return $this->environments;
+    }
+
+    public function addEnvironment(Environment $environment): self
+    {
+        if (!$this->environments->contains($environment)) {
+            $this->environments[] = $environment;
+            $environment->addBeast($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEnvironment(Environment $environment): self
+    {
+        if ($this->environments->removeElement($environment)) {
+            $environment->removeBeast($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Organization[]
+     */
+    public function getOrganizations(): Collection
+    {
+        return $this->organizations;
+    }
+
+    public function addOrganization(Organization $organization): self
+    {
+        if (!$this->organizations->contains($organization)) {
+            $this->organizations[] = $organization;
+            $organization->addManyToMany($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrganization(Organization $organization): self
+    {
+        if ($this->organizations->removeElement($organization)) {
+            $organization->removeManyToMany($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Gear[]
+     */
+    public function getGears(): Collection
+    {
+        return $this->gears;
+    }
+
+    public function addGear(Gear $gear): self
+    {
+        if (!$this->gears->contains($gear)) {
+            $this->gears[] = $gear;
+            $gear->addBeast($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGear(Gear $gear): self
+    {
+        if ($this->gears->removeElement($gear)) {
+            $gear->removeBeast($this);
+        }
 
         return $this;
     }

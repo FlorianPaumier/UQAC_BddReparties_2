@@ -1,0 +1,44 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+	<section
+			class="p-8">
+		<h1 class="text-2xl text-bold">
+			Global
+			Search</h1>
+		<section
+				class="grid grid-cols-2 justify-between align-between gap-x-8 gap-y-4">
+			
+			<section
+					class="my-4">
+				<h2 class="text-xl underline">
+					Beasts</h2>
+				<section>
+					<ul class="grid grid-cols-3 my-4">
+						{% for beast in beasts %}
+							<li class="px-4">
+								<a class="underline"
+								   href="{{ path('beast_show', {"id" : beast.id}) }}">{{ beast.name }}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				</section>
+			</section>
+			<section
+					class="my-4">
+				<h2 class="text-xl underline">
+					Spells</h2>
+				<section>
+					<ul class="grid grid-cols-3 my-4">
+						{% for spell in spells %}
+							<li>
+								<a class="underline"
+								   href="{{ path('spell_show', {"id" : spell.id}) }}">{{ spell.name }}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				</section>
+			</section>
+		</section>
+	</section>
+{% endblock %}

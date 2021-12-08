@@ -21,13 +21,15 @@ Encore
      * ENTRY CONFIG
      *
      * Each entry will result in one JavaScript file (e.g. app.js)
-     * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
+     * and one CSS file (e.g. app.scss) if your JavaScript imports CSS.
      */
     .addEntry('app', './assets/app.js')
     .addEntry('header', './assets/js/header.js')
     .addEntry('search', './assets/js/search.js')
     .addEntry('spellSearch', './assets/js/spellSearch.jsx')
     .addEntry('beastSearch', './assets/js/BeastSearch.js')
+    .addEntry('spellClasses', './assets/js/SpellClasses.js')
+    .addEntry('fullSearch', './assets/js/FullSearch.js')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

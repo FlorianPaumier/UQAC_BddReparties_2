@@ -4,6 +4,9 @@ namespace App\Repository;
 
 use App\Entity\Beast;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Statement;
+use Doctrine\DBAL\Result;
 use Doctrine\Persistence\ManagerRegistry;
 use FOS\RestBundle\Request\ParamFetcherInterface;
 
@@ -15,9 +18,11 @@ use FOS\RestBundle\Request\ParamFetcherInterface;
  */
 class BeastRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Beast::class);
+    public function __construct(
+        ManagerRegistry $registry
+    ) {
+        parent::__construct($registry,
+            Beast::class);
     }
 
     // /**
@@ -50,12 +55,13 @@ class BeastRepository extends ServiceEntityRepository
     */
     public function getIndexList(
         array $search
-    )
-    {
+    ) {
 
         $q = $this->createQueryBuilder("b")
             ->select("b.id",
-                "b.name", "t.value as typeName", 'st.name as subTypeName',
+                "b.name",
+                "t.value as typeName",
+                'st.name as subTypeName',
                 "b.description")
             ->leftJoin("b.type",
                 "t")
@@ -75,36 +81,51 @@ class BeastRepository extends ServiceEntityRepository
         }
 
         if (!empty($search['types'])) {
-            $types = explode(",", $search["types"]);
-            $where = array_map(function ($type) use ($q) {
+            $types = explode(",",
+                $search["types"]);
+            $where = array_map(function (
+                $type
+            ) use
+            (
+                $q
+            ) {
                 if ($type === '') {
                     return '';
                 }
                 return "t.value = :$type";
-            }, $types);
+            },
+                $types);
 
-            $q->andWhere("(" . implode(" OR ", $where) . ")");
+            $q->andWhere("(" . implode(" OR ",
+                    $where) . ")");
             foreach ($types as $typeName) {
                 $params[":$typeName"] = $typeName;
             }
         }
         if (!empty($search['subTypes'])) {
-            $subTypes = explode(",", $search["subTypes"]);
-            $where = array_map(function ($subTypesName) use ($q) {
+            $subTypes = explode(",",
+                $search["subTypes"]);
+            $where = array_map(function (
+                $subTypesName
+            ) use
+            (
+                $q
+            ) {
                 if ($subTypesName === '') {
                     return '';
                 }
                 return "st.name = :$subTypesName";
-            }, $subTypes);
-            $q->andWhere("(" . implode(" OR ", $where) . ")");
+            },
+                $subTypes);
+            $q->andWhere("(" . implode(" OR ",
+                    $where) . ")");
             foreach ($subTypes as $subTypesName) {
                 $params[":$subTypesName"] = $subTypesName;
             }
         }
 
         if (!empty($search["cr"])) {
-            $sql = "";
-            switch ($search["cr"]){
+            switch ($search["cr"]) {
                 case "0":
                     $sql = "b.cr = :cr";
                     $params[":cr"] = $search["cr"];
@@ -121,9 +142,46 @@ class BeastRepository extends ServiceEntityRepository
             }
             $q->where($q->expr()->andX($sql));
         }
-        dump($params);
+
         $q->setParameters($params);
-        dump($q->getQuery()->getSQL());
+
         return $q;
+    }
+
+    public function fullText(
+        string $search
+    ) {
+        /** @var Connection $conn */
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "SELECT DISTINCT s.name as spell, b.name as beast, b.id as id
+                        FROM beast as b
+                        inner join beast_spell bs on b.id = bs.beast_id
+                        inner join spell s on bs.spell_id = s.id ";
+
+        $words = explode(" ", $search);
+        $params = [];
+        foreach ($words as $key => $word){
+            if ($key == 0) {
+                $sql .=
+                    " WHERE (s.documents @@ to_tsquery(:fullText$key)
+                        or b.documents @@ to_tsquery(:fullText$key))";
+            }else{
+                $sql .=
+                    " AND (s.documents @@ to_tsquery(:fullText$key)
+                        or b.documents @@ to_tsquery(:fullText$key))";
+            }
+            $index = "fullText$key";
+            $params[$index] = $word;
+        }
+        $sql .= " order by b.name";
+
+        dump($params);
+        /** @var Statement $stmt */
+        $stmt = $conn->prepare($sql);
+        /** @var Result $result */
+        $result = $stmt->execute($params);
+
+        return $result->fetchAllAssociative();
     }
 }

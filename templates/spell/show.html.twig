@@ -7,15 +7,15 @@
     <div class="2xl:container 2xl:mx-auto  flex justify-center items-center">
         <div id="menu" class="w-96 md:px-6 px-4 md:px-8 xl:px-20 py-12 md:w-full lg:w-10/12 2xl:w-9/12 h-full flex justify-center ">
             <div  class=" relative flex justify-start w-full items-start flex-col md:flex-row  md:space-x-8  bg-white dark:bg-gray-900">
-                <div class="w-full">
+                <div class="w-full h-full">
                     <a href="{{ path('spell_index') }}">Retour</a>
                     <div class="relative">
                         <div class="slider">
-                            <div class="slide-ana h-96 xl:h-auto flex flex-shrink-0">
-                                <div class="flex flex-shrink-0" style="transform: translateX(0%)">
-                                    <img class=" lg:block hidden w-full h-full object-center object-cover" src="{{ asset('images/'~spell.image) }}" alt="shoes" />
-                                    <img class=" hidden md:block lg:hidden w-full h-full object-center object-cover" src="{{ asset('images/'~spell.image) }}" alt="shoe" />
-                                    <img class=" block md:hidden w-full h-full object-center object-cover" src="{{ asset('images/'~spell.image) }}" alt="shoe" />
+                            <div class=" h-auto flex">
+                                <div class="flex">
+                                    <img class="block w-full h-full" src="{{ asset('images/'~ (spell.image ?? 'back.png')) }}" alt="shoes" />
+                                    {#  <img class="hidden md:block lg:hidden w-full h-full object-center object-cover" src="{{ asset('images/'~(spell.image ?? 'back.png')) }}" alt="shoe" />
+                                    <img class="block md:hidden w-full h-full object-center object-cover" src="{{ asset('images/'~(spell.image ?? 'back.png')) }}" alt="shoe" />#}
                                 </div>
                             </div>
                         </div>
@@ -63,8 +63,8 @@
                             <p class=" text-base leading-4 text-gray-600 dark:text-gray-300">effects: {{ spell.effect ?? 'N/C' }}</p>
                             <p class=" text-base leading-4 text-gray-600 dark:text-gray-300">targets: {{ spell.targets ?? 'N/C' }}</p>
                             <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Duration : {{ spell.duration ?? 'N/C' }}</p>
-                            <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Dismissible : {{ spell.dismissible ?? 'N/C' }}</p>
-                            <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Shapeable : {{ spell.shapeable ?? 'N/C' }}</p>
+                            <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Dismissible : {{ (spell.dismissible == 1 ? "Oui" : "Non" ) }}</p>
+                            <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Shapeable : {{ (spell.shapeable == 1 ? "Oui" : "Non" ) }}</p>
                             <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Saving Throw : {{ spell.savingThrow ?? 'N/C' }}</p>
                             <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Spell Resistance : {{ spell.spellResistance ?? 'N/C' }}</p>
                             <p class=" text-base leading-6 lg:leading-4 text-gray-600 dark:text-gray-300">Casting Time : {{ spell.castingTime ?? 'N/C' }}</p>

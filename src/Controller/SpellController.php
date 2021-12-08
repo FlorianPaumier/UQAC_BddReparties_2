@@ -6,6 +6,7 @@ use App\Entity\School;
 use App\Entity\Spell;
 use App\Entity\SubSchool;
 use App\Form\SpellType;
+use App\Repository\ComponentRepository;
 use App\Repository\SchoolRepository;
 use App\Repository\SpellRepository;
 use App\Repository\SubSchoolRepository;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use function Symfony\Component\Translation\t;
 
 #[Route('')]
 class SpellController extends AbstractController
@@ -112,7 +114,6 @@ class SpellController extends AbstractController
     #[Route('/spell/{id}', name: 'spell_show', methods: ['GET'])]
     public function show(Spell $spell): Response
     {
-        dump($spell);
         return $this->render('spell/show.html.twig', [
             'spell' => $spell,
         ]);
