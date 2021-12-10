@@ -176,7 +176,6 @@ class BeastRepository extends ServiceEntityRepository
         }
         $sql .= " order by b.name";
 
-        dump($params);
         /** @var Statement $stmt */
         $stmt = $conn->prepare($sql);
         /** @var Result $result */

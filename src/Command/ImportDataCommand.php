@@ -154,7 +154,6 @@ class ImportDataCommand extends Command
             });
 
 
-        dump("Fin de lecture");
 
         $i = 0;
 

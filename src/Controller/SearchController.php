@@ -315,7 +315,6 @@ class SearchController extends AbstractController
             $fullTextResullt = $result->fetchAllAssociative();
 
             foreach ($fullTextResullt as $spellRank) {
-                dump($spellRank);
                 foreach ($spells as $spell) {
                     if ($spellRank["id"] == $spell["id"]) {
                         $spellResult[] = $spell;

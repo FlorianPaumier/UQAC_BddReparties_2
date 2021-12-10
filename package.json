@@ -27,10 +27,16 @@
     "dependencies": {
         "@fortawesome/fontawesome-free": "^5.15.4",
         "autoprefixer": "^10.4.0",
+        "d3": "^5.16.0",
         "glob-all": "^3.2.1",
         "path": "^0.12.7",
         "postcss-loader": "^6.2.0",
         "purgecss-webpack-plugin": "^4.0.3",
-        "tailwindcss": "^2.2.19"
+        "react-d3-graph": "^2.6.0",
+        "react-force-graph": "^1.41.7",
+        "react-force-graph-2d": "^1.23.8",
+        "react-force-graph-3d": "^1.21.10",
+        "tailwindcss": "^2.2.19",
+        "three": "^0.135.0"
     }
 }

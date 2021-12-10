@@ -71,7 +71,6 @@ class SpellRepository extends ServiceEntityRepository
                 "subSchool");
 
         if ($paramFetcher->get("filter_alpha")) {
-            dump($paramFetcher->get("filter_alpha"));
             $q->where("s.name like :letter")
                 ->setParameter("letter",
                     $paramFetcher->get("filter_alpha") . "%");
@@ -137,9 +136,7 @@ class SpellRepository extends ServiceEntityRepository
             }
         }
 
-        dump($params);
         $q->setParameters($params);
-        dump($q->getQuery()->getSQL());
         return $q;
     }
 

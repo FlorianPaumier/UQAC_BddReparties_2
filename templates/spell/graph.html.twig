@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Graph Spell{% endblock %}
+
+{% block body %}
+    <section id="graphRoot"/>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('graph') }}
+{% endblock %}

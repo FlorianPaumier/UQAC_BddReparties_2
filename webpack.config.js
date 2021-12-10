@@ -30,6 +30,7 @@ Encore
     .addEntry('beastSearch', './assets/js/BeastSearch.js')
     .addEntry('spellClasses', './assets/js/SpellClasses.js')
     .addEntry('fullSearch', './assets/js/FullSearch.js')
+    .addEntry('graph', './assets/js/SpellGraph.js')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

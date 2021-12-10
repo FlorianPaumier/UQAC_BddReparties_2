@@ -36,11 +36,59 @@ class SpellController extends AbstractController
      * @Rest\QueryParam(name="filter_alpha")
      */
     #[Route('/spell', name: 'spell_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(
+    ): Response
     {
-        return $this->render('spell/index.html.twig', []);
+        return $this->render('spell/index.html.twig',
+            []);
     }
 
+    #[Route("/spell-graph")]
+    public function spellGraph(
+    )
+    {
+        return $this->render("spell/graph.html.twig");
+    }
+
+    /**
+     * @param SpellRepository $spellRepository
+     * @return array
+     * @Rest\View()
+     */
+    #[Rest\Route("/api/spell/graph")]
+    public function spellGraphData(
+        SpellRepository $spellRepository
+    ) {
+        $spells = $spellRepository->createQueryBuilder("s")
+            ->select("s.id as id","s.name as spell", "b.name as beast")
+            ->leftJoin("s.beasts", "b")
+//            ->where("s.name = :name")
+//            ->setParameter("name", "Mage Hand")
+            ->groupBy("spell", "beast", "id")
+            ->getQuery()->getArrayResult();
+
+        $spellIndex = [];
+        $data = [];
+        $beastsNode = [];
+        foreach ($spells as $spell){
+            if (!$spell["beast"]) {
+                continue;
+            }
+            if (!in_array($spell["spell"], $spellIndex)) {
+                $spellIndex[] = $spell["spell"];
+            }
+            $beastsNode[$spell["beast"]] = ["id" => $spell["beast"], "group" => $spell["spell"]];
+            $data["links"][] = [
+                "source" => $spell["spell"],
+                "target" => $spell["beast"],
+                "value" => 1
+            ];
+        }
+        $data["nodes"] = array_values($beastsNode);
+        foreach ($spellIndex as $value) $data["nodes"][] = ["id" => $value, "group" => $value];
+
+        return ["data" => $data];
+    }
     /**
      * @param SpellRepository $spellRepository
      * @param SchoolRepository $schoolRepository
@@ -54,14 +102,16 @@ class SpellController extends AbstractController
         SchoolRepository $schoolRepository,
         SubSchoolRepository $subSchoolRepository
     ) {
-        $schools = $schoolRepository->createQueryBuilder("s")->select("s.name", "s.id")->getQuery()->getResult();
-        $subSchools = $subSchoolRepository->createQueryBuilder("s")->select("s.name", "s.id")->getQuery()->getResult();
+        $schools = $schoolRepository->createQueryBuilder("s")->select("s.name",
+            "s.id")->getQuery()->getResult();
+        $subSchools = $subSchoolRepository->createQueryBuilder("s")->select("s.name",
+            "s.id")->getQuery()->getResult();
 
         return [
             'schools' => $schools,
             'subSchools' => $subSchools
         ];
-   }
+    }
 
     /**
      *
@@ -87,14 +137,20 @@ class SpellController extends AbstractController
         ParamFetcherInterface $paramFetcher,
         PaginatorInterface $pagination
     ) {
-        return ["pagination" => Pagination::paginate($spellRepository->getSearch($paramFetcher->all()), $pagination, $paramFetcher)];
-   }
+        return [
+            "pagination" => Pagination::paginate($spellRepository->getSearch($paramFetcher->all()),
+                $pagination,
+                $paramFetcher)
+        ];
+    }
 
     //#[Route('/new', name: 'spell_new', methods: ['GET','POST'])]
-    public function new(Request $request): Response
-    {
+    public function new(
+        Request $request
+    ): Response {
         $spell = new Spell();
-        $form = $this->createForm(SpellType::class, $spell);
+        $form = $this->createForm(SpellType::class,
+            $spell);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -102,50 +158,66 @@ class SpellController extends AbstractController
             $entityManager->persist($spell);
             $entityManager->flush();
 
-            return $this->redirectToRoute('spell_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('spell_index',
+                [],
+                Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('spell/new.html.twig', [
-            'spell' => $spell,
-            'form' => $form,
-        ]);
+        return $this->renderForm('spell/new.html.twig',
+            [
+                'spell' => $spell,
+                'form' => $form,
+            ]);
     }
 
     #[Route('/spell/{id}', name: 'spell_show', methods: ['GET'])]
-    public function show(Spell $spell): Response
-    {
-        return $this->render('spell/show.html.twig', [
-            'spell' => $spell,
-        ]);
+    public function show(
+        Spell $spell
+    ): Response {
+        return $this->render('spell/show.html.twig',
+            [
+                'spell' => $spell,
+            ]);
     }
 
     //#[Route('/{id}/edit', name: 'spell_edit', methods: ['GET','POST'])]
-    public function edit(Request $request, Spell $spell): Response
-    {
-        $form = $this->createForm(SpellType::class, $spell);
+    public function edit(
+        Request $request,
+        Spell $spell
+    ): Response {
+        $form = $this->createForm(SpellType::class,
+            $spell);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getDoctrine()->getManager()->flush();
 
-            return $this->redirectToRoute('spell_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('spell_index',
+                [],
+                Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('spell/edit.html.twig', [
-            'spell' => $spell,
-            'form' => $form,
-        ]);
+        return $this->renderForm('graph.html.twig',
+            [
+                'spell' => $spell,
+                'form' => $form,
+            ]);
     }
 
     //#[Route('/{id}', name: 'spell_delete', methods: ['POST'])]
-    public function delete(Request $request, Spell $spell): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$spell->getId(), $request->request->get('_token'))) {
+    public function delete(
+        Request $request,
+        Spell $spell
+    ): Response {
+        if ($this->isCsrfTokenValid('delete' . $spell->getId(),
+            $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($spell);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('spell_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('spell_index',
+            [],
+            Response::HTTP_SEE_OTHER);
     }
 }
