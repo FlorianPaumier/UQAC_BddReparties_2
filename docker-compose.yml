@@ -1,9 +1,39 @@
 version: '3'
 
 services:
+    php:
+        container_name: pathfinder_php
+        image: php:8.2-fpm
+        restart: unless-stopped
+        volumes:
+            - .:/var/www/html
+            - /var/www/html/var/cache
+        environment:
+            - PHP_IDE_CONFIG=serverName=docker
+            - XDEBUG_DISABLE=true
+
+    node:
+        container_name: pathfinder_node
+        image: node:21-alpine
+        restart: unless-stopped
+        tty: true
+        volumes:
+            - .:/app
+        working_dir: /app
+
+    nginx:
+        container_name: pathfinder_nginx
+        build:
+            context: .
+        volumes:
+            - .:/var/www/html:ro
+        restart: unless-stopped
+        depends_on:
+            - php
+            - database
 ###> doctrine/doctrine-bundle ###
   database:
-    image: postgres:${POSTGRES_VERSION:-13}-alpine
+    image: postgres:14-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
       # You should definitely change the password in production
